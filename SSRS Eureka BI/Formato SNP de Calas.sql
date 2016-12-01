@@ -1,5 +1,7 @@
+-- declare @ParamFechaInicio datetime = '2016/11/29 11:00:00 AM', @ParamFechaFinal datetime = '2016/11/29 12:00:00  PM'
 
 ----------------- Estados de los informes de flota ---------------------------------
+IF OBJECT_ID('tempdb..#EstadoInforme') IS NOT NULL DROP TABLE #EstadoInforme
 select distinct DOMVALUE_L as Codigo, DDTEXT as Descripcion 
 into #EstadoInforme
 from prd.DD07T (nolock)
@@ -39,7 +41,7 @@ from prd.ZTPP_INFOR_FLOTA x (nolock)
 left outer join prd.ZTPP_PUERTOS b (nolock) on x.PTOARRI = b.PTONU and x.MANDT = b.MANDT
 inner join #EstadoInforme c on x.[STATUS] = c.Codigo
 left outer join prd.ZTPP_PUERTOS d (nolock) on x.PTOZARP = d.PTONU and x.MANDT = d.MANDT
-inner join prd.ZTPP_CALAS f (nolock) on x.MANDT = f.MANDT and x.NUMINF = f.NUMINF --select * from prd.ZTPP_CALAS f (nolock)
+inner join prd.ZTPP_CALAS f (nolock) on x.MANDT = f.MANDT and x.NUMINF = f.NUMINF
 left outer join prd.ZTPP_HOJA_MUESTR g (nolock)on x.MANDT=g.MANDT AND x.NUMINF=g.NUMINF and f.NUMCALA=g.NUMCALA
 where 
 f.FECCAL2 between convert(varchar(8),@ParamFechaInicio,112) and convert(varchar(8),@ParamFechaFinal,112)
@@ -92,13 +94,36 @@ PIVOT
 AVG(CANT) FOR TALLA IN ([10.00],[10.50],[11.00],[11.50],[12.00],[12.50],[13.00],[13.50],[14.00],[14.50],[15.00],[15.50],[16.00],[16.50],[17.00],[17.50],[18.00],[18.50],[19.00])
 ) AS PivotTable
 
+IF OBJECT_ID('tempdb..#FINAL') IS NOT NULL DROP TABLE #FINAL
 select a.*, [10.00],[10.50],[11.00],[11.50],[12.00],[12.50],[13.00],[13.50],[14.00],[14.50],[15.00],[15.50],[16.00],[16.50],[17.00],[17.50],[18.00],[18.50],[19.00]
 ,Des_Especie = (select top 1 t3.DDTEXT from prd.DD07T t3 (nolock) where a.ESPECIE = t3.DOMVALUE_L and t3.DOMNAME = 'ZD_ESPECIE')
+into #FINAL
 from #DATOS a
 left outer join #Tallas b on a.NroInforme = b.NUMINF and a.NUMCALA = b.NUMCALA and a.NUMMUE = b.NUMMUE 
 
+-- **********************************************************************************************************************
+-- 01/12/2016 - Agregando filtros por horas
+--select * from #FINAL order by FechaFinCala,HoraFinCala
+--declare @ParamFechaInicio datetime = '2016/11/29 11:00:00 AM', @ParamFechaFinal datetime = '2016/11/29 12:00:00  PM'
+
+-- Variables con el formato time necesario
+declare @i varchar(6), @f varchar(6)
+select @i = replace(convert(varchar, CONVERT(DATETIME, @ParamFechaInicio, 0), 108), ':', '')
+select @f = replace(convert(varchar, CONVERT(DATETIME, @ParamFechaFinal, 0), 108), ':', '')
+
+delete from #FINAL
+where FechaFinCala = convert(varchar(8),@ParamFechaInicio,112)
+and HoraFinCala < @i
+
+delete from #FINAL
+where FechaFinCala = convert(varchar(8),@ParamFechaFinal,112)
+and HoraFinCala > @f
+
+-- **********************************************************************************************************************
+select * from #FINAL order by FechaFinCala,HoraFinCala
 
 drop table #EstadoInforme 
 drop table #DATOS
 drop table #TEMP 
-drop table #Tallas 
+drop table #Tallas
+drop table #FINAL
