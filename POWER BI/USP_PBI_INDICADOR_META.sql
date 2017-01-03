@@ -1,4 +1,4 @@
-CREATE PROCEDURE [dbo].[USP_PBI_INDICADOR_META] -- exec USP_PBI_INDICADOR_META
+ALTER PROCEDURE [dbo].[USP_PBI_INDICADOR_META] -- exec USP_PBI_INDICADOR_META
 AS
 BEGIN
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
@@ -10,7 +10,7 @@ SET NOCOUNT ON;
 -- ******    ANCHOVETA N+C    **********
 -- *************************************
 
--- Avance de Participaci髇 Propia
+-- Avance de Participaci贸n Propia
 declare @app decimal(8,4);
 
 set @app = (select
@@ -29,11 +29,11 @@ CELL PROPERTIES VALUE, BACK_COLOR, FORE_COLOR, FORMATTED_VALUE, FORMAT_STRING, F
 
 update [F_INDICADOR_META]
 set [META_PORCENTAJE] = @app
-where [ID_INDICADOR] = 1 -- Cumplimiento de Participaci髇 Propias
+where [ID_INDICADOR] = 1 -- Cumplimiento de Participaci贸n Propias
 
 
 
--- Avance de Participaci髇 Terceros
+-- Avance de Participaci贸n Terceros
 declare @apt decimal(8,4);
 
 set @apt = (select
@@ -52,12 +52,12 @@ CELL PROPERTIES VALUE, BACK_COLOR, FORE_COLOR, FORMATTED_VALUE, FORMAT_STRING, F
 
 update [F_INDICADOR_META]
 set [META_PORCENTAJE] = @apt
-where [ID_INDICADOR] = 2 -- Cumplimiento de Participaci髇 de Terceros
+where [ID_INDICADOR] = 2 -- Cumplimiento de Participaci贸n de Terceros
 
 
 
 
--- Utilizaci髇 Capacidad de Bodega
+-- Utilizaci贸n Capacidad de Bodega
 declare @ucb decimal(8,4);
 
 set @ucb = (select
